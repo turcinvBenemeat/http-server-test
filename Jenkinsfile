@@ -1,5 +1,5 @@
 pipeline {
-    agent any
+    agent { label 'agent-a' }
     
     environment {
         PYTHON_VERSION = '3.11'
