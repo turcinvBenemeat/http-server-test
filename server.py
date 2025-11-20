@@ -53,7 +53,8 @@ async def health_check():
         "status": "healthy",
         "timestamp": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "uptime": time.time() - start_time,
-        "environment": os.getenv("ENV", os.getenv("NODE_ENV", "development"))
+        "environment": os.getenv("ENV", os.getenv("NODE_ENV", "development")),
+        "version": os.getenv("GIT_SHA", "unknown"),
     }
 
 # API information endpoint
