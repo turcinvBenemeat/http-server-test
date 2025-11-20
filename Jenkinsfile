@@ -19,7 +19,7 @@ pipeline {
         stage('Test') {
             steps {
                 sh """
-                    pytest test_server.py -v
+                    docker run --rm ${IMAGE_NAME}:latest pytest test_server.py -v
                 """
             }
         }
