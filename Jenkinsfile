@@ -35,7 +35,7 @@ pipeline {
                 sh """
                     docker run --rm \
                         -e GIT_SHA=${GIT_SHA} \
-                        ${IMAGE_TAG} pytest app/test_server.py -v
+                        ${IMAGE_TAG} pytest app/test_server.py -v --rootdir=/app
                 """
             }
         }
