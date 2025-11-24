@@ -24,6 +24,8 @@ A RESTful HTTP API server built with Python FastAPI and automated deployment via
 - `DELETE /api/users/{id}` - Delete user
 - `GET /docs` - Interactive API documentation (Swagger UI)
 - `GET /redoc` - Alternative API documentation (ReDoc)
+- `GET /` - Homepage with logo
+- `GET /resources/logo.png` - Direct logo image URL
 
 ## Prerequisites
 
