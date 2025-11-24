@@ -44,13 +44,17 @@ pipeline {
             steps {
                 sh """
                     # Detect which docker compose command is available
-                    if command -v docker-compose &> /dev/null; then
+                    if docker-compose version > /dev/null 2>&1; then
                         COMPOSE_CMD="docker-compose"
-                    elif docker compose version &> /dev/null; then
+                    elif docker compose version > /dev/null 2>&1; then
                         COMPOSE_CMD="docker compose"
                     else
                         echo "ERROR: Neither 'docker-compose' nor 'docker compose' is available"
-                        exit 1
+                        echo "Installing docker-compose..."
+                        # Try to install docker-compose if not available
+                        curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
+                        chmod +x /usr/local/bin/docker-compose
+                        COMPOSE_CMD="docker-compose"
                     fi
                     
                     echo "Using: \$COMPOSE_CMD"
