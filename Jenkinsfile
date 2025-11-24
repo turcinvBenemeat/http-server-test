@@ -124,35 +124,10 @@ pipeline {
                     echo "File type details:"
                     ls -l config/Caddyfile
                     readlink config/Caddyfile 2>/dev/null || echo "Not a symlink"
-                    
-                    # Try alternative mount approach: copy Caddyfile to temp location first
-                    # This avoids potential issues with direct file mounting
-                    echo "Creating temporary Caddyfile for mount..."
-                    TEMP_CADDYFILE="/tmp/caddyfile-\$(date +%s)"
-                    cp config/Caddyfile \${TEMP_CADDYFILE}
-                    chmod 644 \${TEMP_CADDYFILE}
-                    echo "Temporary Caddyfile created: \${TEMP_CADDYFILE}"
-                    ls -la \${TEMP_CADDYFILE}
-                    
-                    # Temporarily modify docker-compose.yml to use temp file
-                    cp docker-compose.yml docker-compose.yml.bak
-                    sed -i "s|\\./config/Caddyfile|\${TEMP_CADDYFILE}|g" docker-compose.yml
-                    echo "Updated docker-compose.yml to use temp file:"
-                    grep Caddyfile docker-compose.yml
-                    
                     # Deploy with docker compose (includes Caddy for HTTPS)
                     # GIT_SHA is passed via environment variable
                     echo "Deploying containers..."
-                    GIT_SHA=${GIT_SHA} \$COMPOSE_CMD --project-directory \${WORKSPACE} up -d --build --remove-orphans || {
-                        echo "Deployment failed, restoring docker-compose.yml..."
-                        mv docker-compose.yml.bak docker-compose.yml
-                        rm -f \${TEMP_CADDYFILE}
-                        exit 1
-                    }
-                    
-                    # Restore original docker-compose.yml
-                    mv docker-compose.yml.bak docker-compose.yml || true
-                    # Keep temp file for now (will be cleaned up on next run)
+                    GIT_SHA=${GIT_SHA} \$COMPOSE_CMD --project-directory \${WORKSPACE} up -d --build --remove-orphans
                     
                     # Wait a moment for containers to start
                     sleep 5
