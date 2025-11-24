@@ -15,9 +15,8 @@
 #     }
 # }
 
-# OPTION 2: If you only have a public IP address
-# Replace YOUR_PUBLIC_IP with your actual public IP
-# Note: Self-signed certificate (browser warning, but works)
+# OPTION 2: Using public IP address (93.90.162.141)
+# Note: Self-signed certificate (browser warning, may not work in Gmail)
 :443 {
     reverse_proxy http-server:3000
     tls internal
