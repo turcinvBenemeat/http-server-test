@@ -113,10 +113,16 @@ pipeline {
                     echo "Caddyfile contents (first 5 lines):"
                     head -5 config/Caddyfile || echo "Could not read Caddyfile"
                     
+                    # Set PWD explicitly for docker-compose
+                    export PWD=\$(pwd)
+                    echo "PWD is set to: \$PWD"
+                    echo "Caddyfile absolute path: \${PWD}/config/Caddyfile"
+                    ls -la \${PWD}/config/Caddyfile
+                    
                     # Deploy with docker compose (includes Caddy for HTTPS)
                     # GIT_SHA is passed via environment variable
                     echo "Deploying containers..."
-                    GIT_SHA=${GIT_SHA} \$COMPOSE_CMD up -d --build --remove-orphans
+                    GIT_SHA=${GIT_SHA} PWD=\${PWD} \$COMPOSE_CMD up -d --build --remove-orphans
                     
                     # Wait a moment for containers to start
                     sleep 5
