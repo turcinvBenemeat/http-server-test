@@ -29,7 +29,6 @@ services:
       - "443:443"
       - "443:443/udp"
     volumes:
-      - ./config:/caddy-config:ro
       - caddy_data:/data
       - caddy_config:/config
     command: ["sh", "-c", "rm -rf /etc/caddy/Caddyfile && cat > /etc/caddy/Caddyfile << 'CADDYEOF'\n:80 {\n    reverse_proxy http-server:3000\n    encode gzip zstd\n    header {\n        X-Content-Type-Options \"nosniff\"\n        X-Frame-Options \"DENY\"\n        X-XSS-Protection \"1; mode=block\"\n    }\n}\n\n:443 {\n    reverse_proxy http-server:3000\n    tls internal\n    encode gzip zstd\n    header {\n        X-Content-Type-Options \"nosniff\"\n        X-Frame-Options \"DENY\"\n        X-XSS-Protection \"1; mode=block\"\n    }\n}\nCADDYEOF\ncaddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
