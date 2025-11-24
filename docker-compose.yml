@@ -32,7 +32,7 @@ services:
       - ./config:/caddy-config:ro
       - caddy_data:/data
       - caddy_config:/config
-    command: ["sh", "-c", "rm -rf /etc/caddy/Caddyfile && if [ -f /caddy-config/Caddyfile ]; then cp /caddy-config/Caddyfile /etc/caddy/Caddyfile; elif [ -d /caddy-config/Caddyfile ]; then find /caddy-config/Caddyfile -type f -name 'Caddyfile' -exec cp {} /etc/caddy/Caddyfile \\; || cat /caddy-config/Caddyfile/* > /etc/caddy/Caddyfile 2>/dev/null || (ls -la /caddy-config/ && cat /caddy-config/Caddyfile > /etc/caddy/Caddyfile); else ls -la /caddy-config/ && cat /caddy-config/Caddyfile > /etc/caddy/Caddyfile; fi && caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
+    command: ["sh", "-c", "rm -rf /etc/caddy/Caddyfile && (cat /caddy-config/Caddyfile 2>/dev/null || find /caddy-config -name 'Caddyfile' -type f -exec cat {} \\;) > /etc/caddy/Caddyfile && caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
     networks:
       - app-network
     depends_on:
