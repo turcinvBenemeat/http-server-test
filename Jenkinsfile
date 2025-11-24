@@ -90,19 +90,28 @@ pipeline {
                     # Ensure config directory and Caddyfile exist
                     echo "Verifying config files..."
                     pwd
+                    echo "Current directory contents:"
                     ls -la
+                    echo "Checking config directory:"
+                    ls -la config/ || echo "config directory does not exist, creating..."
                     mkdir -p config
+                    
                     if [ ! -f config/Caddyfile ]; then
                         echo "ERROR: config/Caddyfile not found!"
                         echo "Available files in config/:"
-                        ls -la config/ || echo "config directory does not exist"
+                        ls -la config/ || echo "config directory is empty"
                         echo "Checking if file exists with absolute path..."
                         ls -la \${WORKSPACE}/config/Caddyfile || echo "Absolute path also not found"
+                        echo "Checking git status..."
+                        git status config/Caddyfile || echo "File not in git"
                         exit 1
                     fi
+                    
                     echo "Caddyfile found, verifying it's a file (not directory)..."
                     [ -f config/Caddyfile ] && echo "✓ Caddyfile is a file" || echo "✗ Caddyfile is not a file"
                     [ -d config/Caddyfile ] && echo "✗ ERROR: Caddyfile is a directory!" && exit 1
+                    echo "Caddyfile contents (first 5 lines):"
+                    head -5 config/Caddyfile || echo "Could not read Caddyfile"
                     
                     # Deploy with docker compose (includes Caddy for HTTPS)
                     # GIT_SHA is passed via environment variable
