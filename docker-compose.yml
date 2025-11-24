@@ -36,11 +36,6 @@ services:
       - app-network
     depends_on:
       - http-server
-    healthcheck:
-      test: ["CMD", "caddy", "version"]
-      interval: 10s
-      timeout: 3s
-      retries: 3
 
 networks:
   app-network:
