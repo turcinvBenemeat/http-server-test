@@ -236,22 +236,28 @@ pytest test_server.py --cov=server --cov-report=html
 
 ```
 .
-├── server.py              # Main server file (FastAPI application)
-├── requirements.txt       # Production dependencies (pip)
-├── requirements-dev.txt   # Development dependencies (pip)
-├── environment.yml        # Conda environment (production)
-├── environment-dev.yml    # Conda environment (development)
-├── test_server.py         # Test suite
-├── Dockerfile             # Docker image configuration
-├── docker-compose.yml     # Docker Compose configuration
-├── Jenkinsfile            # Jenkins CI/CD pipeline
+├── app/                   # Application code
+│   ├── server.py          # Main server file (FastAPI application)
+│   └── test_server.py     # Test suite
+├── templates/             # HTML templates
+│   └── index.html         # Homepage template
+├── static/                # Static files
+│   └── resources/         # Static resources
+│       └── logo.png       # Logo image
+├── docs/                  # Documentation
+│   ├── DEPLOYMENT.md      # Detailed deployment guide
+│   └── QUICK_START.md     # Quick start guide
 ├── srv/
 │   └── deploy/            # Deployment scripts
 │       ├── deploy.sh      # Automated deployment script
 │       └── deploy-manual.sh  # Manual deployment script
-├── docs/                  # Documentation
-│   ├── DEPLOYMENT.md      # Detailed deployment guide
-│   └── QUICK_START.md     # Quick start guide
+├── requirements.txt       # Production dependencies (pip)
+├── requirements-dev.txt   # Development dependencies (pip)
+├── environment.yml        # Conda environment (production)
+├── environment-dev.yml    # Conda environment (development)
+├── Dockerfile             # Docker image configuration
+├── docker-compose.yml     # Docker Compose configuration
+├── Jenkinsfile            # Jenkins CI/CD pipeline
 ├── .env.example           # Environment variables template
 ├── .gitignore            # Git ignore rules
 └── README.md             # This file

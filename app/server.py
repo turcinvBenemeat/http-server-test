@@ -17,7 +17,9 @@ app = FastAPI(
 )
 
 # Mount static files
-app.mount("/resources", StaticFiles(directory="resources"), name="resources")
+import pathlib
+BASE_DIR = pathlib.Path(__file__).parent.parent
+app.mount("/resources", StaticFiles(directory=str(BASE_DIR / "static" / "resources")), name="resources")
 
 # CORS middleware
 app.add_middleware(
@@ -54,7 +56,7 @@ class UserUpdate(BaseModel):
 # Serve homepage
 @app.get("/")
 async def read_root():
-    return FileResponse("index.html")
+    return FileResponse(str(BASE_DIR / "templates" / "index.html"))
 
 # Health check endpoint
 @app.get("/health")
