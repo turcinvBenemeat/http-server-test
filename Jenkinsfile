@@ -46,11 +46,9 @@ pipeline {
                     # Stop and remove old containers
                     docker compose down || true
                     
-                    # Set GIT_SHA environment variable for docker-compose
-                    export GIT_SHA=${GIT_SHA}
-                    
                     # Deploy with docker compose (includes Caddy for HTTPS)
-                    docker compose up -d --build
+                    # GIT_SHA is passed via environment variable
+                    GIT_SHA=${GIT_SHA} docker compose up -d --build
                     
                     # Show status
                     docker compose ps
