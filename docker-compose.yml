@@ -32,7 +32,7 @@ services:
       - ./config:/caddy-config:ro
       - caddy_data:/data
       - caddy_config:/config
-    command: ["sh", "-c", "echo '=== Debug: Checking mount ===' && ls -la /caddy-config/ && echo '=== Looking for Caddyfile ===' && find /caddy-config -type f -name '*Caddyfile*' -o -name '*caddyfile*' && echo '=== Creating Caddyfile ===' && rm -rf /etc/caddy/Caddyfile && (find /caddy-config -type f -name 'Caddyfile' 2>/dev/null | head -1 | xargs cat || find /caddy-config -type f | head -1 | xargs cat || echo '# Caddyfile\n:80 {\n    reverse_proxy http-server:3000\n}\n:443 {\n    reverse_proxy http-server:3000\n    tls internal\n}') > /etc/caddy/Caddyfile && echo '=== Caddyfile content ===' && cat /etc/caddy/Caddyfile && echo '=== Starting Caddy ===' && caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
+    command: ["sh", "-c", "rm -rf /etc/caddy/Caddyfile && cat > /etc/caddy/Caddyfile << 'CADDYEOF'\n:80 {\n    reverse_proxy http-server:3000\n    encode gzip zstd\n    header {\n        X-Content-Type-Options \"nosniff\"\n        X-Frame-Options \"DENY\"\n        X-XSS-Protection \"1; mode=block\"\n    }\n}\n\n:443 {\n    reverse_proxy http-server:3000\n    tls internal\n    encode gzip zstd\n    header {\n        X-Content-Type-Options \"nosniff\"\n        X-Frame-Options \"DENY\"\n        X-XSS-Protection \"1; mode=block\"\n    }\n}\nCADDYEOF\ncaddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
     networks:
       - app-network
     depends_on:
