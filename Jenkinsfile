@@ -43,13 +43,17 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh """
-                    docker rm -f ${CONTAINER_NAME} || true
-
-                    docker run -d --name ${CONTAINER_NAME} \
-                        -p ${APP_PORT}:${APP_PORT} \
-                        -e GIT_SHA=${GIT_SHA} \
-                        --restart unless-stopped \
-                        ${IMAGE_TAG}
+                    # Stop and remove old containers
+                    docker-compose down || true
+                    
+                    # Set GIT_SHA environment variable for docker-compose
+                    export GIT_SHA=${GIT_SHA}
+                    
+                    # Deploy with docker-compose (includes Caddy for HTTPS)
+                    docker-compose up -d --build
+                    
+                    # Show status
+                    docker-compose ps
                 """
             }
         }
