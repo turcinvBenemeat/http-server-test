@@ -29,10 +29,10 @@ services:
       - "443:443"
       - "443:443/udp"
     volumes:
-      - ./config/Caddyfile:/tmp/Caddyfile:ro
+      - ./config:/caddy-config:ro
       - caddy_data:/data
       - caddy_config:/config
-    command: ["sh", "-c", "rm -rf /etc/caddy/Caddyfile && if [ -d /tmp/Caddyfile ]; then cat /tmp/Caddyfile/* > /etc/caddy/Caddyfile 2>/dev/null || cat /tmp/Caddyfile/Caddyfile > /etc/caddy/Caddyfile; else cat /tmp/Caddyfile > /etc/caddy/Caddyfile; fi && caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
+    command: ["sh", "-c", "rm -rf /etc/caddy/Caddyfile && cp /caddy-config/Caddyfile /etc/caddy/Caddyfile && caddy run --config /etc/caddy/Caddyfile --adapter caddyfile"]
     networks:
       - app-network
     depends_on:
