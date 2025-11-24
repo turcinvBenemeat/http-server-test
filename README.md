@@ -24,8 +24,7 @@ A RESTful HTTP API server built with Python FastAPI and automated deployment via
 - `DELETE /api/users/{id}` - Delete user
 - `GET /docs` - Interactive API documentation (Swagger UI)
 - `GET /redoc` - Alternative API documentation (ReDoc)
-- `GET /` - Homepage with logo
-- `GET /resources/logo.png` - Direct logo image URL
+- `GET /` - API information (same as `/api`)
 
 ## Prerequisites
 
@@ -234,6 +233,11 @@ Run tests with coverage:
 pytest test_server.py --cov=server --cov-report=html
 ```
 
+## Branches
+
+- **`main`** - Production-ready API server (API-only, no frontend)
+- **`feature/logo-webpage`** - Logo webpage feature (includes logo serving and HTML page)
+
 ## Project Structure
 
 ```
@@ -241,11 +245,6 @@ pytest test_server.py --cov=server --cov-report=html
 ├── app/                   # Application code
 │   ├── server.py          # Main server file (FastAPI application)
 │   └── test_server.py     # Test suite
-├── templates/             # HTML templates
-│   └── index.html         # Homepage template
-├── static/                # Static files
-│   └── resources/         # Static resources
-│       └── logo.png       # Logo image
 ├── docs/                  # Documentation
 │   ├── DEPLOYMENT.md      # Detailed deployment guide
 │   └── QUICK_START.md     # Quick start guide
