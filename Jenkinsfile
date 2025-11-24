@@ -49,12 +49,29 @@ pipeline {
                     elif docker compose version > /dev/null 2>&1; then
                         COMPOSE_CMD="docker compose"
                     else
-                        echo "ERROR: Neither 'docker-compose' nor 'docker compose' is available"
-                        echo "Installing docker-compose..."
-                        # Try to install docker-compose if not available
-                        curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-\$(uname -s)-\$(uname -m)" -o /usr/local/bin/docker-compose
-                        chmod +x /usr/local/bin/docker-compose
+                        echo "Neither 'docker-compose' nor 'docker compose' is available"
+                        echo "Installing docker-compose to workspace directory..."
+                        
+                        # Install to workspace directory (user-writable)
+                        COMPOSE_BIN="\${WORKSPACE}/docker-compose"
+                        ARCH=\$(uname -m)
+                        OS=\$(uname -s | tr '[:upper:]' '[:lower:]')
+                        
+                        # Map architecture names
+                        case "\$ARCH" in
+                            x86_64) ARCH="x86_64" ;;
+                            aarch64|arm64) ARCH="aarch64" ;;
+                            *) ARCH="x86_64" ;;
+                        esac
+                        
+                        curl -L "https://github.com/docker/compose/releases/download/v2.24.0/docker-compose-\${OS}-\${ARCH}" -o "\${COMPOSE_BIN}"
+                        chmod +x "\${COMPOSE_BIN}"
+                        
+                        # Add to PATH for this session
+                        export PATH="\${WORKSPACE}:\${PATH}"
                         COMPOSE_CMD="docker-compose"
+                        
+                        echo "Installed docker-compose to \${COMPOSE_BIN}"
                     fi
                     
                     echo "Using: \$COMPOSE_CMD"
