@@ -120,11 +120,30 @@ pipeline {
                     ls -la config/Caddyfile
                     echo "Caddyfile size: \$(stat -c%s config/Caddyfile 2>/dev/null || stat -f%z config/Caddyfile 2>/dev/null || echo 'unknown') bytes"
                     
+                    # Check if it's actually a symlink or special file
+                    echo "File type details:"
+                    ls -l config/Caddyfile
+                    readlink config/Caddyfile 2>/dev/null || echo "Not a symlink"
+                    
+                    # Create absolute path for Caddyfile
+                    CADDYFILE_PATH="\$(realpath config/Caddyfile || echo \${WORKSPACE}/config/Caddyfile)"
+                    echo "Absolute Caddyfile path: \${CADDYFILE_PATH}"
+                    
+                    # Temporarily modify docker-compose.yml to use absolute path
+                    # Backup original
+                    cp docker-compose.yml docker-compose.yml.bak
+                    # Replace relative path with absolute path
+                    sed -i "s|\\./config/Caddyfile|\${CADDYFILE_PATH}|g" docker-compose.yml
+                    echo "Updated docker-compose.yml:"
+                    grep Caddyfile docker-compose.yml
+                    
                     # Deploy with docker compose (includes Caddy for HTTPS)
                     # GIT_SHA is passed via environment variable
-                    # Use --project-directory to ensure docker-compose uses correct paths
                     echo "Deploying containers..."
                     GIT_SHA=${GIT_SHA} \$COMPOSE_CMD --project-directory \${WORKSPACE} up -d --build --remove-orphans
+                    
+                    # Restore original docker-compose.yml
+                    mv docker-compose.yml.bak docker-compose.yml || true
                     
                     # Wait a moment for containers to start
                     sleep 5
