@@ -245,6 +245,13 @@ pytest test_server.py --cov=server --cov-report=html
 ├── Dockerfile             # Docker image configuration
 ├── docker-compose.yml     # Docker Compose configuration
 ├── Jenkinsfile            # Jenkins CI/CD pipeline
+├── srv/
+│   └── deploy/            # Deployment scripts
+│       ├── deploy.sh      # Automated deployment script
+│       └── deploy-manual.sh  # Manual deployment script
+├── docs/                  # Documentation
+│   ├── DEPLOYMENT.md      # Detailed deployment guide
+│   └── QUICK_START.md     # Quick start guide
 ├── .env.example           # Environment variables template
 ├── .gitignore            # Git ignore rules
 └── README.md             # This file
