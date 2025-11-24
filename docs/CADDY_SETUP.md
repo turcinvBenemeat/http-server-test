@@ -110,21 +110,25 @@ docker run -d \
 
 ## Domain Setup
 
-### Option 1: Use Your Own Domain
+**👉 Don't have a domain? See [FREE_DOMAIN_SETUP.md](FREE_DOMAIN_SETUP.md) for free options!**
+
+### Option 1: Use Free Domain (Recommended)
+
+- **DuckDNS** (free, easiest): https://www.duckdns.org/
+- **No-IP** (free): https://www.noip.com/
+- **Freenom** (free .tk/.ml domains): https://www.freenom.com/
+
+See [FREE_DOMAIN_SETUP.md](FREE_DOMAIN_SETUP.md) for detailed instructions.
+
+### Option 2: Use Your Own Domain
 
 1. Point your domain's A record to your server's public IP
 2. Update Caddyfile with your domain
 3. Caddy will automatically get SSL certificate
 
-### Option 2: Use Free Domain Services
+### Option 3: Use Public IP (Not Recommended for Gmail)
 
-- **DuckDNS** (free): https://www.duckdns.org/
-- **No-IP** (free): https://www.noip.com/
-- **Freenom** (free): https://www.freenom.com/
-
-### Option 3: Use Public IP (Less Secure)
-
-If you only have a public IP, Caddy can still work but with self-signed certificates.
+If you only have a public IP, Caddy can work but with self-signed certificates (browser warnings, may not work in Gmail).
 
 ## Testing
 

@@ -1,35 +1,42 @@
 # Caddyfile configuration for HTTPS reverse proxy
 # Caddy automatically handles HTTPS with Let's Encrypt
 
-# Replace with your domain name or IP
-your-domain.com {
-    # Reverse proxy to FastAPI application (use service name in Docker)
+# OPTION 1: If you have a domain name (recommended for Gmail)
+# Uncomment and replace with your domain:
+# your-domain.com {
+#     reverse_proxy http-server:3000
+#     encode gzip zstd
+#     header {
+#         Strict-Transport-Security "max-age=31536000; includeSubDomains"
+#         X-Content-Type-Options "nosniff"
+#         X-Frame-Options "DENY"
+#         X-XSS-Protection "1; mode=block"
+#         Referrer-Policy "strict-origin-when-cross-origin"
+#     }
+# }
+
+# OPTION 2: If you only have a public IP address
+# Replace YOUR_PUBLIC_IP with your actual public IP
+# Note: Self-signed certificate (browser warning, but works)
+:443 {
     reverse_proxy http-server:3000
-    
-    # Enable compression
+    tls internal
     encode gzip zstd
-    
-    # Security headers
     header {
-        # Security headers
-        Strict-Transport-Security "max-age=31536000; includeSubDomains"
         X-Content-Type-Options "nosniff"
         X-Frame-Options "DENY"
         X-XSS-Protection "1; mode=block"
-        Referrer-Policy "strict-origin-when-cross-origin"
     }
 }
 
-# If you only have an IP address (less secure, but works)
-# Replace with your public IP
-# :443 {
-#     reverse_proxy localhost:3000
-#     tls internal
+# OPTION 3: HTTP only (for testing, NOT for Gmail)
+# Uncomment this if you want HTTP only:
+# :80 {
+#     reverse_proxy http-server:3000
+#     encode gzip zstd
 # }
 
-# HTTP to HTTPS redirect (optional, Caddy does this automatically)
-# But you can be explicit:
-http://your-domain.com {
-    redir https://your-domain.com{uri}
-}
+# OPTION 4: Free domain services (recommended!)
+# Use DuckDNS, No-IP, or Freenom for free domain
+# Then use OPTION 1 with your free domain name
 
