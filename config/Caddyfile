@@ -3,8 +3,8 @@
 
 # Replace with your domain name or IP
 your-domain.com {
-    # Reverse proxy to FastAPI application
-    reverse_proxy localhost:3000
+    # Reverse proxy to FastAPI application (use service name in Docker)
+    reverse_proxy http-server:3000
     
     # Enable compression
     encode gzip zstd
