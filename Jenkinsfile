@@ -118,7 +118,7 @@ pipeline {
                     echo "Changed to workspace: \$(pwd)"
                     echo "Verifying Caddyfile path:"
                     ls -la config/Caddyfile
-                    file config/Caddyfile
+                    echo "Caddyfile size: \$(stat -c%s config/Caddyfile 2>/dev/null || stat -f%z config/Caddyfile 2>/dev/null || echo 'unknown') bytes"
                     
                     # Deploy with docker compose (includes Caddy for HTTPS)
                     # GIT_SHA is passed via environment variable
