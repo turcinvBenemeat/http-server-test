@@ -8,14 +8,25 @@ nginx is running on port 80 and returning 404, blocking access to your app.
 ### Option 1: Stop nginx and Use Caddy (Recommended)
 
 ```bash
-# Stop and disable nginx
+# Check if nginx is running as a service
+sudo systemctl status nginx
+
+# If service exists, stop it:
 sudo systemctl stop nginx
 sudo systemctl disable nginx
 
+# If service doesn't exist, find and kill nginx processes:
+ps aux | grep nginx
+sudo pkill -9 nginx
+# Or find the PID and kill it:
+sudo kill -9 $(pgrep nginx)
+
+# Check what's using port 80:
+sudo ss -tlnp | grep :80
+
 # Restart docker-compose (Caddy will handle port 80)
 cd /path/to/http-server-test
-docker-compose down
-docker-compose up -d
+docker-compose restart caddy
 
 # Verify
 curl http://93.90.162.141/health
