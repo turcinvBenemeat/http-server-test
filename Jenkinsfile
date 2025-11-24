@@ -76,15 +76,32 @@ pipeline {
                     
                     echo "Using: \$COMPOSE_CMD"
                     
-                    # Stop and remove old containers
-                    \$COMPOSE_CMD down || true
+                    # Force stop and remove containers (even if not managed by compose)
+                    echo "Stopping and removing existing containers..."
+                    docker stop http-server-test caddy-proxy 2>/dev/null || true
+                    docker rm http-server-test caddy-proxy 2>/dev/null || true
+                    
+                    # Stop and remove containers via docker-compose (if they exist)
+                    \$COMPOSE_CMD down --remove-orphans 2>/dev/null || true
+                    
+                    # Clean up any orphaned networks
+                    docker network prune -f || true
                     
                     # Deploy with docker compose (includes Caddy for HTTPS)
                     # GIT_SHA is passed via environment variable
-                    GIT_SHA=${GIT_SHA} \$COMPOSE_CMD up -d --build
+                    echo "Deploying containers..."
+                    GIT_SHA=${GIT_SHA} \$COMPOSE_CMD up -d --build --remove-orphans
+                    
+                    # Wait a moment for containers to start
+                    sleep 5
                     
                     # Show status
+                    echo "Container status:"
                     \$COMPOSE_CMD ps
+                    
+                    # Show logs for debugging
+                    echo "Recent logs:"
+                    \$COMPOSE_CMD logs --tail=20
                 """
             }
         }
