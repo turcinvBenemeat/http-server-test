@@ -43,15 +43,27 @@ pipeline {
         stage('Deploy') {
             steps {
                 sh """
+                    # Detect which docker compose command is available
+                    if command -v docker-compose &> /dev/null; then
+                        COMPOSE_CMD="docker-compose"
+                    elif docker compose version &> /dev/null; then
+                        COMPOSE_CMD="docker compose"
+                    else
+                        echo "ERROR: Neither 'docker-compose' nor 'docker compose' is available"
+                        exit 1
+                    fi
+                    
+                    echo "Using: \$COMPOSE_CMD"
+                    
                     # Stop and remove old containers
-                    docker compose down || true
+                    \$COMPOSE_CMD down || true
                     
                     # Deploy with docker compose (includes Caddy for HTTPS)
                     # GIT_SHA is passed via environment variable
-                    GIT_SHA=${GIT_SHA} docker compose up -d --build
+                    GIT_SHA=${GIT_SHA} \$COMPOSE_CMD up -d --build
                     
                     # Show status
-                    docker compose ps
+                    \$COMPOSE_CMD ps
                 """
             }
         }
