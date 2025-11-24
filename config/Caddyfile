@@ -28,12 +28,17 @@
     }
 }
 
-# OPTION 3: HTTP only (for testing, NOT for Gmail)
-# Uncomment this if you want HTTP only:
-# :80 {
-#     reverse_proxy http-server:3000
-#     encode gzip zstd
-# }
+# OPTION 3: HTTP on port 80 (for immediate access)
+# This handles HTTP requests on port 80
+:80 {
+    reverse_proxy http-server:3000
+    encode gzip zstd
+    header {
+        X-Content-Type-Options "nosniff"
+        X-Frame-Options "DENY"
+        X-XSS-Protection "1; mode=block"
+    }
+}
 
 # OPTION 4: Free domain services (recommended!)
 # Use DuckDNS, No-IP, or Freenom for free domain
