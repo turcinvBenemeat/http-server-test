@@ -1,7 +1,5 @@
 from fastapi import FastAPI, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.staticfiles import StaticFiles
-from fastapi.responses import FileResponse
 from pydantic import BaseModel, EmailStr
 from typing import List, Optional
 import os
@@ -15,11 +13,6 @@ app = FastAPI(
     description="RESTful HTTP API server with Jenkins CI/CD",
     version="1.0.0"
 )
-
-# Mount static files
-import pathlib
-BASE_DIR = pathlib.Path(__file__).parent.parent
-app.mount("/resources", StaticFiles(directory=str(BASE_DIR / "static" / "resources")), name="resources")
 
 # CORS middleware
 app.add_middleware(
@@ -53,10 +46,22 @@ class UserUpdate(BaseModel):
     name: Optional[str] = None
     email: Optional[EmailStr] = None
 
-# Serve homepage
+# Root endpoint - API information
 @app.get("/")
-async def read_root():
-    return FileResponse(str(BASE_DIR / "templates" / "index.html"))
+async def root():
+    return {
+        "message": "Welcome to HTTP Server API",
+        "version": "1.0.0",
+        "endpoints": [
+            "GET /health - Health check",
+            "GET /api - API information",
+            "GET /api/users - Get all users",
+            "GET /api/users/{id} - Get user by ID",
+            "POST /api/users - Create new user",
+            "PUT /api/users/{id} - Update user",
+            "DELETE /api/users/{id} - Delete user"
+        ]
+    }
 
 # Health check endpoint
 @app.get("/health")
