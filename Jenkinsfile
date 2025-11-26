@@ -4,7 +4,7 @@ pipeline {
     environment {
         IMAGE_NAME     = "http-server-test"
         CONTAINER_NAME = "http-server-test"
-        APP_PORT       = "3000"
+        APP_PORT       = "3001"
     }
 
     stages {

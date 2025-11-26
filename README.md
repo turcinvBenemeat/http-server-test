@@ -26,7 +26,7 @@ pip install -r requirements.txt
 pip install -r requirements-dev.txt
 
 # Run server
-uvicorn app.server:app --reload --port 3000
+uvicorn app.server:app --reload --port 3001
 
 # Run tests
 pytest app/test_server.py -v
@@ -55,15 +55,15 @@ pip install -r requirements.txt
 pip install -r requirements-dev.txt
 
 # Start server
-uvicorn app.server:app --reload --port 3000
+uvicorn app.server:app --reload --port 3001
 
 # In another terminal, test endpoints:
-curl http://localhost:3000/
-curl http://localhost:3000/health
-curl http://localhost:3000/api/users
+curl http://localhost:3001/
+curl http://localhost:3001/health
+curl http://localhost:3001/api/users
 
 # Or open in browser:
-# http://localhost:3000/docs (Swagger UI)
+# http://localhost:3001/docs (Swagger UI)
 ```
 
 ### Option 2: Docker Testing
@@ -98,46 +98,46 @@ curl http://93.90.162.141/api/users
 
 ### Get API info
 ```bash
-curl http://localhost:3000/
+curl http://localhost:3001/
 ```
 
 ### Health check
 ```bash
-curl http://localhost:3000/health
+curl http://localhost:3001/health
 ```
 
 ### Get all users
 ```bash
-curl http://localhost:3000/api/users
+curl http://localhost:3001/api/users
 ```
 
 ### Get user by ID
 ```bash
-curl http://localhost:3000/api/users/1
+curl http://localhost:3001/api/users/1
 ```
 
 ### Create user
 ```bash
-curl -X POST http://localhost:3000/api/users \
+curl -X POST http://localhost:3001/api/users \
   -H "Content-Type: application/json" \
   -d '{"name": "John Doe", "email": "john@example.com"}'
 ```
 
 ### Update user
 ```bash
-curl -X PUT http://localhost:3000/api/users/1 \
+curl -X PUT http://localhost:3001/api/users/1 \
   -H "Content-Type: application/json" \
   -d '{"name": "Jane Doe"}'
 ```
 
 ### Delete user
 ```bash
-curl -X DELETE http://localhost:3000/api/users/1
+curl -X DELETE http://localhost:3001/api/users/1
 ```
 
 ## Interactive API Documentation
 
 Open in browser:
-- **Swagger UI**: http://localhost:3000/docs
-- **ReDoc**: http://localhost:3000/redoc
+- **Swagger UI**: http://localhost:3001/docs
+- **ReDoc**: http://localhost:3001/redoc
 
