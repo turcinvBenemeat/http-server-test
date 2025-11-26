@@ -113,23 +113,9 @@ pipeline {
         }
         failure {
             echo 'Pipeline failed!'
-            mail to: 'turcinv@btlnet.com',
-                subject: "http-server-test pipeline FAILED (#${env.BUILD_NUMBER})",
-                body: """Jenkins job ${env.JOB_NAME} failed.
-Build: ${env.BUILD_NUMBER}
-Git SHA: ${env.GIT_SHA}
-Details: ${env.BUILD_URL}
-"""
         }
         success {
             echo "Pipeline succeeded! Deployed image tag: ${IMAGE_TAG}"
-            mail to: 'turcinv@btlnet.com',
-                subject: "http-server-test pipeline SUCCESS (#${env.BUILD_NUMBER})",
-                body: """Jenkins job ${env.JOB_NAME} succeeded.
-Build: ${env.BUILD_NUMBER}
-Image tag: ${env.IMAGE_TAG}
-Details: ${env.BUILD_URL}
-"""
         }
     }
 }
