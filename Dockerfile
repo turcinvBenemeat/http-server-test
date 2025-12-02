@@ -14,9 +14,8 @@ RUN chmod 1777 /tmp \
         curl \
     && rm -rf /var/lib/apt/lists/*
 
-# Install dependencies
-COPY requirements.txt .
-COPY requirements-dev.txt .
+# Install Python dependencies
+COPY requirements.txt requirements-dev.txt ./
 
 RUN pip install --no-cache-dir -r requirements.txt \
     && pip install --no-cache-dir -r requirements-dev.txt
