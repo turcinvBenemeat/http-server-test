@@ -44,7 +44,7 @@ pipeline {
 
         stage('Deploy') {
             steps {
-                sh """
+                sh '''
                     # Detect which docker compose command is available
                     if docker-compose version > /dev/null 2>&1; then
                         COMPOSE_CMD="docker-compose"
@@ -54,7 +54,7 @@ pipeline {
                         echo "Neither 'docker-compose' nor 'docker compose' is available"
                         echo "Installing docker-compose to workspace directory..."
 
-                        COMPOSE_BIN="${WORKSPACE}/docker-compose"
+                        COMPOSE_BIN="$WORKSPACE/docker-compose"
                         ARCH=$(uname -m)
                         OS=$(uname -s | tr '[:upper:]' '[:lower:]')
 
@@ -84,7 +84,7 @@ pipeline {
                     docker network prune -f || true
 
                     echo "Deploying containers..."
-                    GIT_SHA=${GIT_SHA} $COMPOSE_CMD --project-directory ${WORKSPACE} up -d --build --remove-orphans
+                    GIT_SHA=$GIT_SHA $COMPOSE_CMD --project-directory "$WORKSPACE" up -d --build --remove-orphans
 
                     sleep 5
 
@@ -93,7 +93,7 @@ pipeline {
 
                     echo "Recent logs:"
                     $COMPOSE_CMD logs --tail=20
-                """
+                '''
             }
         }
     }
