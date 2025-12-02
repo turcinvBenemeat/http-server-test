@@ -115,7 +115,23 @@ pipeline {
             echo 'Pipeline failed!'
         }
         success {
-            echo "Pipeline succeeded! Deployed image tag: ${IMAGE_TAG}"
+            mail(
+                to: 'turcinv@btlnet.com',
+                subject: "[SUCCESS] ${env.JOB_NAME} #${env.BUILD_NUMBER}",
+                body: """
+Build SUCCESSFUL.
+
+Job:        ${env.JOB_NAME}
+Build:      ${env.BUILD_NUMBER}
+Git SHA:    ${env.GIT_SHA}
+Image tag:  ${env.IMAGE_TAG}
+Node:       ${env.NODE_NAME}
+URL:        ${env.BUILD_URL}
+
+This message was sent automatically by Jenkins after a successful deployment.
+"""
+            )
+            echo "Pipeline succeeded! Deployed image tag: ${IMAGE_TAG} (success email sent)"
         }
     }
 }
