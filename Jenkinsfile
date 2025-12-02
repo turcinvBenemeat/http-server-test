@@ -105,23 +105,63 @@ pipeline {
 
         failure {
             script {
-                def cause = currentBuild.getBuildCauses()?.get(0)
-                def startedBy = cause?.userName ?: "SYSTEM"
+                def cause     = currentBuild.getBuildCauses()[0]
+                def startedBy = cause?.userName ?: cause?.shortDescription ?: 'SCM change'
+                def shortSha  = (env.GIT_SHA ?: '').take(7)
 
                 mail(
                     to: 'turcinv@btlnet.com',
                     subject: "[FAILURE] ${env.JOB_NAME} #${env.BUILD_NUMBER} – started by ${startedBy}",
+                    mimeType: 'text/html',
                     body: """
-Build FAILED.
+<html>
+  <body style="font-family: Arial, sans-serif;">
+    <h2 style="color:#c0392b;">Build FAILED</h2>
 
-Started by: ${startedBy}
+    <p>Started by: <strong>${startedBy}</strong></p>
 
-Job:        ${env.JOB_NAME}
-Build:      ${env.BUILD_NUMBER}
-Git SHA:    ${env.GIT_SHA}
-Image tag:  ${env.IMAGE_TAG}
-Node:       ${env.NODE_NAME}
-URL:        ${env.BUILD_URL}console
+    <table cellpadding="4" cellspacing="0" border="0" style="border-collapse:collapse; font-size:14px;">
+      <tr>
+        <th align="left">Job</th>
+        <td>${env.JOB_NAME}</td>
+      </tr>
+      <tr>
+        <th align="left">Build</th>
+        <td>${env.BUILD_NUMBER}</td>
+      </tr>
+      <tr>
+        <th align="left">Branch</th>
+        <td>${env.GIT_BRANCH ?: 'main'}</td>
+      </tr>
+      <tr>
+        <th align="left">Git SHA</th>
+        <td>${shortSha}</td>
+      </tr>
+      <tr>
+        <th align="left">Image tag</th>
+        <td>${env.IMAGE_TAG}</td>
+      </tr>
+      <tr>
+        <th align="left">Node</th>
+        <td>${env.NODE_NAME}</td>
+      </tr>
+      <tr>
+        <th align="left">Duration</th>
+        <td>${currentBuild.durationString.replace(' and counting', '')}</td>
+      </tr>
+    </table>
+
+    <p style="margin-top:16px;">
+      <strong>Console log:</strong>
+      <a href="${env.BUILD_URL}console">${env.BUILD_URL}console</a>
+    </p>
+
+    <hr style="margin-top:20px; border:none; border-top:1px solid #ddd;" />
+    <p style="font-size:12px; color:#777;">
+      This message was sent automatically by Jenkins after a failed deployment.
+    </p>
+  </body>
+</html>
 """
                 )
             }
@@ -130,25 +170,63 @@ URL:        ${env.BUILD_URL}console
 
         success {
             script {
-                def cause = currentBuild.getBuildCauses()?.get(0)
-                def startedBy = cause?.userName ?: "SYSTEM"
+                def cause     = currentBuild.getBuildCauses()[0]
+                def startedBy = cause?.userName ?: cause?.shortDescription ?: 'SCM change'
+                def shortSha  = (env.GIT_SHA ?: '').take(7)
 
                 mail(
                     to: 'turcinv@btlnet.com',
                     subject: "[SUCCESS] ${env.JOB_NAME} #${env.BUILD_NUMBER} – started by ${startedBy}",
+                    mimeType: 'text/html',
                     body: """
-Build SUCCESSFUL.
+<html>
+  <body style="font-family: Arial, sans-serif;">
+    <h2 style="color:#27ae60;">Build SUCCESSFUL</h2>
 
-Started by: ${startedBy}
+    <p>Started by: <strong>${startedBy}</strong></p>
 
-Job:        ${env.JOB_NAME}
-Build:      ${env.BUILD_NUMBER}
-Git SHA:    ${env.GIT_SHA}
-Image tag:  ${env.IMAGE_TAG}
-Node:       ${env.NODE_NAME}
-URL:        ${env.BUILD_URL}
+    <table cellpadding="4" cellspacing="0" border="0" style="border-collapse:collapse; font-size:14px;">
+      <tr>
+        <th align="left">Job</th>
+        <td>${env.JOB_NAME}</td>
+      </tr>
+      <tr>
+        <th align="left">Build</th>
+        <td>${env.BUILD_NUMBER}</td>
+      </tr>
+      <tr>
+        <th align="left">Branch</th>
+        <td>${env.GIT_BRANCH ?: 'main'}</td>
+      </tr>
+      <tr>
+        <th align="left">Git SHA</th>
+        <td>${shortSha}</td>
+      </tr>
+      <tr>
+        <th align="left">Image tag</th>
+        <td>${env.IMAGE_TAG}</td>
+      </tr>
+      <tr>
+        <th align="left">Node</th>
+        <td>${env.NODE_NAME}</td>
+      </tr>
+      <tr>
+        <th align="left">Duration</th>
+        <td>${currentBuild.durationString.replace(' and counting', '')}</td>
+      </tr>
+    </table>
 
-This message was sent automatically by Jenkins after a successful deployment.
+    <p style="margin-top:16px;">
+      <strong>Build URL:</strong>
+      <a href="${env.BUILD_URL}">${env.BUILD_URL}</a>
+    </p>
+
+    <hr style="margin-top:20px; border:none; border-top:1px solid #ddd;" />
+    <p style="font-size:12px; color:#777;">
+      This message was sent automatically by Jenkins after a successful deployment.
+    </p>
+  </body>
+</html>
 """
                 )
             }
