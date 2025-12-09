@@ -42,6 +42,57 @@ pipeline {
             }
         }
 
+        stage('Approval') {
+            steps {
+                script {
+                    // Send email asking for approval
+                    mail(
+                        to: 'turcinv@btlnet.com',
+                        subject: "[APPROVAL NEEDED] ${env.JOB_NAME} #${env.BUILD_NUMBER} – Git SHA ${env.GIT_SHA}",
+                        mimeType: 'text/html',
+                        body: """
+<html>
+  <body style=\"font-family: Arial, sans-serif;\">
+    <h2 style=\"color:#2980b9;\">Deployment approval required</h2>
+
+    <p>The build <strong>${env.JOB_NAME} #${env.BUILD_NUMBER}</strong> finished successfully and is waiting for deployment approval.</p>
+
+    <table cellpadding=\"4\" cellspacing=\"0\" border=\"0\" style=\"border-collapse:collapse; font-size:14px;\">
+      <tr>
+        <th align=\"left\">Branch</th>
+        <td>${env.GIT_BRANCH ?: 'main'}</td>
+      </tr>
+      <tr>
+        <th align=\"left\">Git SHA</th>
+        <td>${env.GIT_SHA}</td>
+      </tr>
+      <tr>
+        <th align=\"left\">Image tag</th>
+        <td>${env.IMAGE_TAG}</td>
+      </tr>
+    </table>
+
+    <p style=\"margin-top:16px;\">
+      To approve the deployment, open Jenkins and click <strong>Proceed</strong> on the input step for this build:<br/>
+      <a href=\"${env.BUILD_URL}\">${env.BUILD_URL}</a>
+    </p>
+
+    <p style=\"margin-top:8px; font-size:12px; color:#777;\">
+      If you do not approve within the timeout window, the deployment will be cancelled automatically.
+    </p>
+  </body>
+</html>
+"""
+                    )
+
+                    // Wait for manual approval in Jenkins UI (linked in the email above)
+                    timeout(time: 1, unit: 'HOURS') {
+                        input message: 'Approve deployment to production?', ok: 'Deploy'
+                    }
+                }
+            }
+        }
+
         stage('Deploy') {
             steps {
                 sh '''
@@ -101,6 +152,71 @@ pipeline {
     post {
         always {
             echo 'Cleaning up...'
+        }
+
+        failure {
+            script {
+                def cause     = currentBuild.getBuildCauses()[0]
+                def startedBy = cause?.userName ?: cause?.shortDescription ?: 'SCM change'
+                def shortSha  = (env.GIT_SHA ?: '').take(7)
+
+                mail(
+                    to: 'turcinv@btlnet.com',
+                    subject: "[FAILURE] ${env.JOB_NAME} #${env.BUILD_NUMBER} – started by ${startedBy}",
+                    mimeType: 'text/html',
+                    body: """
+<html>
+  <body style="font-family: Arial, sans-serif;">
+    <h2 style="color:#c0392b;">Build FAILED</h2>
+
+    <p>Started by: <strong>${startedBy}</strong></p>
+
+    <table cellpadding="4" cellspacing="0" border="0" style="border-collapse:collapse; font-size:14px;">
+      <tr>
+        <th align="left">Job</th>
+        <td>${env.JOB_NAME}</td>
+      </tr>
+      <tr>
+        <th align="left">Build</th>
+        <td>${env.BUILD_NUMBER}</td>
+      </tr>
+      <tr>
+        <th align="left">Branch</th>
+        <td>${env.GIT_BRANCH ?: 'main'}</td>
+      </tr>
+      <tr>
+        <th align="left">Git SHA</th>
+        <td>${shortSha}</td>
+      </tr>
+      <tr>
+        <th align="left">Image tag</th>
+        <td>${env.IMAGE_TAG}</td>
+      </tr>
+      <tr>
+        <th align="left">Node</th>
+        <td>${env.NODE_NAME}</td>
+      </tr>
+      <tr>
+        <th align="left">Duration</th>
+        <td>${currentBuild.durationString.replace(' and counting', '')}</td>
+      </tr>
+    </table>
+
+    <p style="margin-top:16px;">
+      <strong>Console log:</strong>
+      <a href="${env.BUILD_URL}console">${env.BUILD_URL}console</a>
+    </p>
+
+    <hr style="margin-top:20px; border:none; border-top:1px solid #ddd;" />
+    <p style="font-size:12px; color:#777;">
+      This message was sent automatically by Jenkins after a failed deployment.
+    </p>
+  </body>
+</html>
+"""
+                )
+            }
+            echo 'Pipeline failed!'
         }
 
         failure {
