@@ -106,12 +106,16 @@ pipeline {
                     )
 
                     // Send email asking for approval
-                    mail(
-                        to: 'turcinv@btlnet.com',
-                        subject: "[APPROVAL NEEDED] ${env.JOB_NAME} #${env.BUILD_NUMBER} – Git SHA ${env.GIT_SHA}",
-                        mimeType: 'text/html',
-                        body: approvalBody
-                    )
+                    try {
+                        mail(
+                            to: 'turcinv@btlnet.com',
+                            subject: "[APPROVAL NEEDED] ${env.JOB_NAME} #${env.BUILD_NUMBER} – Git SHA ${env.GIT_SHA}",
+                            mimeType: 'text/html',
+                            body: approvalBody
+                        )
+                    } catch (err) {
+                        echo "Failed to send approval email: ${err.message}"
+                    }
 
                     // Wait for manual approval in Jenkins UI (linked in the email above)
                     timeout(time: 1, unit: 'HOURS') {
@@ -203,12 +207,16 @@ pipeline {
                     failureAdditionalContent
                 )
 
-                mail(
-                    to: 'turcinv@btlnet.com',
-                    subject: "[FAILURE] ${env.JOB_NAME} #${env.BUILD_NUMBER} – started by ${startedBy}",
-                    mimeType: 'text/html',
-                    body: failureBody
-                )
+                try {
+                    mail(
+                        to: 'turcinv@btlnet.com',
+                        subject: "[FAILURE] ${env.JOB_NAME} #${env.BUILD_NUMBER} – started by ${startedBy}",
+                        mimeType: 'text/html',
+                        body: failureBody
+                    )
+                } catch (err) {
+                    echo "Failed to send failure email: ${err.message}"
+                }
             }
             echo 'Pipeline failed!'
         }
@@ -234,12 +242,16 @@ pipeline {
                     successAdditionalContent
                 )
 
-                mail(
-                    to: 'turcinv@btlnet.com',
-                    subject: "[SUCCESS] ${env.JOB_NAME} #${env.BUILD_NUMBER} – started by ${startedBy}",
-                    mimeType: 'text/html',
-                    body: successBody
-                )
+                try {
+                    mail(
+                        to: 'turcinv@btlnet.com',
+                        subject: "[SUCCESS] ${env.JOB_NAME} #${env.BUILD_NUMBER} – started by ${startedBy}",
+                        mimeType: 'text/html',
+                        body: successBody
+                    )
+                } catch (err) {
+                    echo "Failed to send success email: ${err.message}"
+                }
             }
             echo "Pipeline succeeded! Deployed image tag: ${IMAGE_TAG} (success email sent)"
         }

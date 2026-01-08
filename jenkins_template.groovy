@@ -1,3 +1,41 @@
+// Function to generate consistent HTML email bodies
+def generateEmailBody(type, title, titleColor, message, additionalContent = '') {
+    def shortSha  = (env.GIT_SHA ?: "").take(7)
+    def cause     = currentBuild.getBuildCauses()[0]
+    def startedBy = cause?.userName ?: cause?.shortDescription ?: "SCM change"
+
+    def tableRows = (type == 'approval') ? """
+        <tr><th align="left">Branch</th><td>${env.GIT_BRANCH ?: "main"}</td></tr>
+        <tr><th align="left">Git SHA</th><td>${env.GIT_SHA}</td></tr>
+        <tr><th align="left">Image tag</th><td>${env.IMAGE_TAG}</td></tr>
+    """ : """
+        <tr><th align="left">Job</th><td>${env.JOB_NAME}</td></tr>
+        <tr><th align="left">Build</th><td>${env.BUILD_NUMBER}</td></tr>
+        <tr><th align="left">Branch</th><td>${env.GIT_BRANCH ?: "main"}</td></tr>
+        <tr><th align="left">Git SHA</th><td>${shortSha}</td></tr>
+        <tr><th align="left">Image tag</th><td>${env.IMAGE_TAG}</td></tr>
+        <tr><th align="left">Node</th><td>${env.NODE_NAME}</td></tr>
+        <tr><th align="left">Duration</th><td>${currentBuild.durationString.replace(" and counting", "")}</td></tr>
+    """
+
+    return """
+<html>
+  <body style="font-family: Arial, sans-serif;">
+    <h2 style="color:${titleColor};">${title}</h2>
+    ${type != 'approval' ? "<p>Started by: <strong>${startedBy}</strong></p>" : ""}
+    ${message}
+    <table cellpadding="4" cellspacing="0" border="0" style="border-collapse: collapse;">
+      ${tableRows}
+    </table>
+    ${additionalContent}
+    <p style="font-size: 12px; color: #777; margin-top: 20px;">
+      This message was sent automatically by Jenkins.
+    </p>
+  </body>
+</html>
+"""
+}
+
 pipeline {
     // Agent to run the pipeline on
     agent { label 'agent-a' }
@@ -43,6 +81,49 @@ pipeline {
                         -e GIT_SHA=${GIT_SHA} \
                         ${IMAGE_TAG} pytest tests/ -v
                 """
+            }
+        }
+
+        stage("Approval") {
+            steps {
+                script {
+                    def approvalMessage = """
+        <p>The build <strong>${env.JOB_NAME} #${env.BUILD_NUMBER}</strong> finished successfully and is waiting for deployment approval.</p>
+                    """
+
+                    def approvalAdditionalContent = """
+        <p style="margin-top:16px;">
+          To approve the deployment, open Jenkins and click <strong>Proceed</strong> on the input step for this build:<br/>
+          <a href="${env.BUILD_URL}">${env.BUILD_URL}</a>
+        </p>
+        <p style="margin-top:8px; font-size:12px; color:#777;">
+          If you do not approve within the timeout window, the deployment will be cancelled automatically.
+        </p>
+                    """
+
+                    def approvalBody = generateEmailBody(
+                        'approval',
+                        'Deployment approval required',
+                        '#2980b9',
+                        approvalMessage,
+                        approvalAdditionalContent
+                    )
+
+                    try {
+                        mail(
+                            to: EMAIL_TO,
+                            subject: "[APPROVAL NEEDED] ${env.JOB_NAME} #${env.BUILD_NUMBER} – Git SHA ${env.GIT_SHA}",
+                            mimeType: 'text/html',
+                            body: approvalBody
+                        )
+                    } catch (err) {
+                        echo "Failed to send approval email: ${err.message}"
+                    }
+
+                    timeout(time: 1, unit: 'HOURS') {
+                        input message: 'Approve deployment to production?', ok: 'Deploy'
+                    }
+                }
             }
         }
 
@@ -105,36 +186,30 @@ pipeline {
                 def startedBy = cause?.userName ?: cause?.shortDescription ?: "SCM change"
                 def shortSha  = (env.GIT_SHA ?: "").take(7)
 
-                mail(
-                    to: EMAIL_TO,
-                    subject: "[FAILURE] ${env.JOB_NAME} #${env.BUILD_NUMBER} – Started by ${startedBy}",
-                    mimeType: "text/html",
-                    body: """
-<html>
-  <body style="font-family: Arial, sans-serif;">
-    <h2 style="color:#c0392b;">Build FAILED</h2>
+                def failureAdditionalContent = """
+        <p style="margin-top:16px;">
+          <strong>Console log:</strong> <a href="${env.BUILD_URL}console">${env.BUILD_URL}console</a>
+        </p>
+                """
 
-    <p>Started by: <strong>${startedBy}</strong></p>
-
-    <table cellpadding="4" cellspacing="0" border="0" style="border-collapse: collapse;">
-      <tr><th align="left">Job</th>       <td>${env.JOB_NAME}</td></tr>
-      <tr><th align="left">Build</th>     <td>${env.BUILD_NUMBER}</td></tr>
-      <tr><th align="left">Branch</th>    <td>${env.GIT_BRANCH ?: "main"}</td></tr>
-      <tr><th align="left">Git SHA</th>   <td>${shortSha}</td></tr>
-      <tr><th align="left">Image</th>     <td>${env.IMAGE_TAG}</td></tr>
-      <tr><th align="left">Node</th>      <td>${env.NODE_NAME}</td></tr>
-      <tr><th align="left">Duration</th>  <td>${currentBuild.durationString.replace(" and counting", "")}</td></tr>
-    </table>
-
-    <p><strong>Console log:</strong> <a href="${env.BUILD_URL}console">${env.BUILD_URL}console</a></p>
-
-    <p style="font-size: 12px; color: #777; margin-top: 20px;">
-      This message was sent automatically by Jenkins after a failed deployment.
-    </p>
-  </body>
-</html>
-"""
+                def failureBody = generateEmailBody(
+                    'failure',
+                    'Build FAILED',
+                    '#c0392b',
+                    '',
+                    failureAdditionalContent
                 )
+
+                try {
+                    mail(
+                        to: EMAIL_TO,
+                        subject: "[FAILURE] ${env.JOB_NAME} #${env.BUILD_NUMBER} – Started by ${startedBy}",
+                        mimeType: "text/html",
+                        body: failureBody
+                    )
+                } catch (err) {
+                    echo "Failed to send failure email: ${err.message}"
+                }
             }
 
             echo "Pipeline failed."
@@ -146,36 +221,30 @@ pipeline {
                 def startedBy = cause?.userName ?: cause?.shortDescription ?: "SCM change"
                 def shortSha  = (env.GIT_SHA ?: "").take(7)
 
-                mail(
-                    to: EMAIL_TO,
-                    subject: "[SUCCESS] ${env.JOB_NAME} #${env.BUILD_NUMBER} – Started by ${startedBy}",
-                    mimeType: "text/html",
-                    body: """
-<html>
-  <body style="font-family: Arial, sans-serif;">
-    <h2 style="color:#27ae60;">Build SUCCESSFUL</h2>
+                def successAdditionalContent = """
+        <p style="margin-top:16px;">
+          <strong>Build URL:</strong> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a>
+        </p>
+                """
 
-    <p>Started by: <strong>${startedBy}</strong></p>
-
-    <table cellpadding="4" cellspacing="0" border="0" style="border-collapse: collapse;">
-      <tr><th align="left">Job</th>       <td>${env.JOB_NAME}</td></tr>
-      <tr><th align="left">Build</th>     <td>${env.BUILD_NUMBER}</td></tr>
-      <tr><th align="left">Branch</th>    <td>${env.GIT_BRANCH ?: "main"}</td></tr>
-      <tr><th align="left">Git SHA</th>   <td>${shortSha}</td></tr>
-      <tr><th align="left">Image</th>     <td>${env.IMAGE_TAG}</td></tr>
-      <tr><th align="left">Node</th>      <td>${env.NODE_NAME}</td></tr>
-      <tr><th align="left">Duration</th>  <td>${currentBuild.durationString.replace(" and counting", "")}</td></tr>
-    </table>
-
-    <p><strong>Build URL:</strong> <a href="${env.BUILD_URL}">${env.BUILD_URL}</a></p>
-
-    <p style="font-size: 12px; color: #777; margin-top: 20px;">
-      This message was sent automatically by Jenkins after a successful deployment.
-    </p>
-  </body>
-</html>
-"""
+                def successBody = generateEmailBody(
+                    'success',
+                    'Build SUCCESSFUL',
+                    '#27ae60',
+                    '',
+                    successAdditionalContent
                 )
+
+                try {
+                    mail(
+                        to: EMAIL_TO,
+                        subject: "[SUCCESS] ${env.JOB_NAME} #${env.BUILD_NUMBER} – Started by ${startedBy}",
+                        mimeType: "text/html",
+                        body: successBody
+                    )
+                } catch (err) {
+                    echo "Failed to send success email: ${err.message}"
+                }
             }
 
             echo "Pipeline succeeded. Deployed image tag: ${IMAGE_TAG}"
